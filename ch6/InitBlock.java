@@ -2,7 +2,16 @@ package ch6;
 
 public class InitBlock {
   public static void main(String[] args) {
-    for (var i = 0; i < 10; ++i) {
+    System.out.println("static property init sequence: ");
+    System.out.println("\t1. default value");
+    System.out.println("\t2. explicit initialization");
+    System.out.println("\t3. static init block (called only once)");
+    System.out.println("instance property init sequence: ");
+    System.out.println("\t1. default value");
+    System.out.println("\t2. explicit initialization");
+    System.out.println("\t3. instance init block");
+    System.out.println("\t4. initializer");
+    for (var i = 0; i < 5; ++i) {
       var block = new BlockTest();
       System.out.println("serialNo = " + block.serialNo);
     }
@@ -10,15 +19,21 @@ public class InitBlock {
 }
 
 class BlockTest {
-  static int count = 0;
+  static int count = 0; // explicit init
+  /// class init block (static init block)
   static {
-    System.out.println("Welcome to static init block!");
+    System.out.println("class init block!");
   }
 
   int serialNo;
+  /// instance init block
   {
     count++;
     serialNo = count;
-    System.out.println("Weocome to instance init block! current serialNo is " + serialNo);
+    System.out.println("instance init block!");
+  }
+
+  BlockTest() {
+    System.out.println("initializer!");
   }
 }
