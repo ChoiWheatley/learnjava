@@ -10,8 +10,10 @@ public class DeckTest {
     }
     System.out.println("Let's begin!");
     System.out.println("top card from deck : " + deck.pick(0));
-    deck.shuffle();
-    System.out.println("after shuffle, top card is : " + deck.pick(0));
+    for (var i = 0; i < 10; ++i) {
+      deck.shuffle();
+      System.out.println("after shuffle, top card is : " + deck.pick(0));
+    }
 
   }
 }
