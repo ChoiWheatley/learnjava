@@ -24,6 +24,7 @@ class Deck {
     int idx = 0;
     for (var k = 0; k < Card.Kind.values().length; ++k) {
       for (var n = 0; n < Card.NUM_MAX; ++n) {
+        // enum은 순서가 보장이 된다. Card.Kind.values()
         cardArr[idx] = new Card(Card.Kind.values()[k], n);
         ++idx;
       }
