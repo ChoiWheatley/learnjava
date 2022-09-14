@@ -10,15 +10,24 @@ public class Composition {
         new Point(100, 50),
         new Point(75, 100),
     };
-    Shape circle = new Circle(points[0], 30);
-    Shape triangle = new Triangle(Arrays.copyOfRange(points, 1, 1 + points.length));
+    Circle circleComposite = new CircleComposite(points[0], 30);
+    Circle circleAggregate = new CircleAggregate(points[0], 30);
+    Triangle triangle = new Triangle(Arrays.copyOfRange(points, 1, 1 + points.length));
 
-    circle.draw();
+    circleComposite.draw();
+    circleAggregate.draw();
     triangle.draw();
+
+    System.out
+        .println("Is same between points[0] and circleComposite.center? : " +
+            (points[0] == circleComposite.center));
+    System.out
+        .println("Is same between points[0] and circleAggregate.center? : " +
+            (points[0] == circleAggregate.center));
   }
 }
 
-class Shape {
+abstract class Shape {
   String color = "black";
 
   void draw() {
@@ -29,20 +38,19 @@ class Shape {
 /*
  * inheritance: 객체 간에 가장 강한 결합.
  */
-class Circle extends Shape {
+abstract class Circle extends Shape {
   Point center;
   Integer radius;
 
-  Circle(Point center, int radius) {
-    /*
-     * 이렇게 하면 composition이 아니라 aggregation
-     * aggregation은 동일한 생명주기를 갖지 않는 관계, 'Person'과 'Address'와 같다.
-     * Circle **has a** Point
-     * where
-     * - Circle = Aggregate (whole)
-     * - Point = Component (part)
-     */
-    this.center = center;
+  @Override
+  void draw() {
+    System.out.printf("{center = %s, radius = %d}\n", center, radius);
+    super.draw();
+  }
+}
+
+class CircleComposite extends Circle {
+  CircleComposite(Point center, int radius) {
     /*
      * 아래는 composition이다. Circle이 죽으면 Point도 같이 죽는다. 또는 해당 객체의 소유권을
      * 다른 composition에 넘겨주어야 한다.
@@ -55,11 +63,20 @@ class Circle extends Shape {
     this.center = new Point(center);
     this.radius = radius;
   }
+}
 
-  @Override
-  void draw() {
-    System.out.printf("{center = %s, radius = %d}\n", center, radius);
-    super.draw();
+class CircleAggregate extends Circle {
+  CircleAggregate(Point center, int radius) {
+    /*
+     * 이렇게 하면 composition이 아니라 aggregation
+     * aggregation은 동일한 생명주기를 갖지 않는 관계, 'Person'과 'Address'와 같다.
+     * Circle **has a** Point
+     * where
+     * - Circle = Aggregate (whole)
+     * - Point = Component (part)
+     */
+    this.center = center;
+    this.radius = radius;
   }
 }
 
