@@ -6,19 +6,6 @@ public class SuperInit {
   }
 }
 
-class Point2D {
-  int x, y;
-
-  Point2D(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  String getLocation() {
-    return "{x: " + x + ", y: " + y + "}";
-  }
-}
-
 class Point3D extends Point2D {
   int z;
 

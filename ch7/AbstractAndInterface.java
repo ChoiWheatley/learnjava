@@ -12,66 +12,49 @@ public class AbstractAndInterface {
         new Marine());
 
     // move altogether
-    for (var unit : group) {
-      if (unit instanceof Movable) {
-        ((Movable) unit).move(new Point2D(100, 200));
-      }
+    // `::` 이건 도대체 무슨 문법이여
+    final Iterable<Movable> movableUnits = group.stream()
+        .filter(Movable.class::isInstance)
+        .map(Movable.class::cast)::iterator;
+
+    for (var m : movableUnits) {
+      m.move(new Point2D(100, 200));
+      System.out.println(((Unit) m).position());
     }
 
     // stimpack altogether
-    group.stream().filter(unit -> unit instanceof Marine).forEach(
-        marine -> ((Marine) marine).stimPack());
+    group.stream()
+        .filter(Marine.class::isInstance)
+        .map(Marine.class::cast)
+        .forEach(Marine::stimPack);
 
     Unit enemy = new Tank();
     // group attacks an enemy;
+    /* Stream과 Double coln operator를 활용한 함수형 프로그래밍 */
+    group.stream()
+        .filter(Attackable.class::isInstance)
+        .map(Attackable.class::cast)
+        .forEach(attacker -> attacker.attack(enemy));
+
+    /* 반복문을 통해서 직접 타입체크와 캐스팅을 수행하기 */
     for (var unit : group) {
       if (unit instanceof Attackable) {
         ((Attackable) unit).attack(enemy);
       }
     }
+
+    /* 적진 SCV가 적진 탱크를 수리하는 과정 */
+    var scv = new SCV();
+    scv.repair((Tank) enemy);
+    System.out.println("enemy's hp: " + enemy.hp());
   }
-
-}
-
-abstract class Unit {
-  Point2D pos;
-  int hp;
-  int guard;
-
-  /**
-   * 자신의 hp를 깎는 기능을 작성하시오.
-   * 
-   * @param amount 만큼의 데미지가 들어왔다.
-   */
-  public abstract void takeDamage(int amount);
-}
-
-interface Movable {
-  /**
-   * 지정된 위치로 이동하는 기능을 작성하시오.
-   */
-  void move(Point2D p);
-}
-
-interface Attackable {
-  /**
-   * 자신의 공격력을 리턴합니다.
-   */
-  int power();
-
-  /**
-   * 지정된 대상(u)의 hp를 깎는 기능을 작성하시오.
-   * 
-   * @param u enemy
-   */
-  void attack(Unit u);
 
 }
 
 interface Fightable extends Movable, Attackable {
 }
 
-class Marine extends Unit implements Fightable {
+class Marine extends GroundUnit implements Fightable {
   Marine() {
     this.guard = 2;
     this.hp = 10;
@@ -94,16 +77,6 @@ class Marine extends Unit implements Fightable {
   }
 
   @Override
-  public void takeDamage(int amount) {
-    var damage = amount - guard;
-    if (damage < 0)
-      damage = 1;
-    hp -= damage;
-    System.out.printf("%d의 데미지를 입었습니다. %s의 현재 체력: %d\n",
-        damage, this, hp);
-  }
-
-  @Override
   public String toString() {
     return "마린";
   }
@@ -114,7 +87,7 @@ class Marine extends Unit implements Fightable {
   }
 }
 
-class Tank extends Unit implements Fightable {
+class Tank extends GroundUnit implements Fightable, Repairable {
   Tank() {
     this.hp = 30;
     this.guard = 5;
@@ -133,17 +106,6 @@ class Tank extends Unit implements Fightable {
   }
 
   @Override
-  public void takeDamage(int amount) {
-    var damage = amount - guard;
-    if (damage < 0)
-      damage = 1;
-    hp -= damage;
-    System.out.printf("%d의 데미지를 입었습니다. %s의 현재 체력: %d\n",
-        damage, this, hp);
-
-  }
-
-  @Override
   public String toString() {
     return "시즈탱크";
   }
@@ -152,9 +114,16 @@ class Tank extends Unit implements Fightable {
   public int power() {
     return 10;
   }
+
+  @Override
+  public void repairMe(int amount) {
+    final var beforeHp = hp;
+    hp += amount;
+    System.out.printf("%s's getting repaired(from %d to %d)\n", this, beforeHp, hp);
+  }
 }
 
-class Dropship extends Unit implements Fightable {
+class Dropship extends AirUnit implements Movable, Repairable {
   Dropship() {
     this.hp = 30;
     this.guard = 15;
@@ -167,27 +136,63 @@ class Dropship extends Unit implements Fightable {
   }
 
   @Override
-  public void attack(Unit u) {
-    System.out.println("드롭쉽은 공격기능이 없습니다.");
-  }
-
-  @Override
-  public void takeDamage(int amount) {
-    var damage = amount - guard;
-    if (damage < 0)
-      damage = 1;
-    hp -= damage;
-    System.out.printf("%d의 데미지를 입었습니다. %s의 현재 체력: %d\n",
-        damage, this, hp);
-  }
-
-  @Override
   public String toString() {
     return "드롭쉽";
   }
 
   @Override
-  public int power() {
-    return 0;
+  public void repairMe(int amount) {
+    final var beforeHp = hp;
+    hp += amount;
+    System.out.printf("%s's getting repaired(from %d to %d)\n", this, beforeHp, hp);
   }
+}
+
+class SCV extends GroundUnit implements Fightable, Repairable {
+  int power = 3;
+
+  SCV() {
+    this.hp = 15;
+    this.guard = 5;
+  }
+
+  /**
+   * 수리가능한 기계유닛을 수리한다.
+   */
+  public void repair(Repairable r) {
+    System.out.printf("%s.repair -> %s(%d)\n", this, r, power);
+    r.repairMe(power);
+  }
+
+  @Override
+  public void move(Point2D p) {
+    System.out.println("에씨비스고써!");
+    this.pos.x = p.x;
+    this.pos.y = p.y;
+  }
+
+  @Override
+  public int power() {
+    return this.power;
+  }
+
+  @Override
+  public void attack(Unit u) {
+    System.out.printf("SCV.attack -> %s(%d)\n", u, power());
+    u.takeDamage(power());
+  }
+
+  @Override
+  public void repairMe(int amount) {
+    final var beforeHp = hp;
+    final var afterHp = hp + amount;
+    System.out.printf("%s's getting repaired(from %d to %d)\n", this, beforeHp, hp);
+    hp = afterHp;
+  }
+
+  @Override
+  public String toString() {
+    return "SCV";
+  }
+
 }
