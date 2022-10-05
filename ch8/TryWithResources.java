@@ -47,6 +47,8 @@ public class TryWithResources {
       e.printStackTrace();
     } catch (CloseException e) {
       e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
