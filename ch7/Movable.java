@@ -1,6 +1,6 @@
 package ch7;
 
-public interface Movable {
+public interface Movable extends Unit {
   /**
    * 지정된 위치로 이동하는 기능을 작성하시오.
    */
