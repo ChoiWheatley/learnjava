@@ -32,7 +32,8 @@ public class AbstractAndInterface {
     // group attacks an enemy;
     /* Stream과 Double coln operator를 활용한 함수형 프로그래밍 */
     group.stream()
-        .filter(Attackable.class::isInstance)
+        // .filter(Attackable.class::isInstance)
+        .filter(e -> e instanceof Attackable)
         .map(Attackable.class::cast)
         .forEach(attacker -> attacker.attack(enemy));
 
